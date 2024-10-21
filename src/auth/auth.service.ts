@@ -19,7 +19,11 @@ export class AuthService {
   ) {}
 
   async validateAdmin(username: string, password: string): Promise<any> {
-    const admin = await this.prisma.admin.findUnique({ where: { username } });
+    const admin = await this.prisma.admin.findUnique({
+      where: { username },
+      include: { group: true }, // Assuming there is a relation named 'group'
+    });
+
     if (!admin) {
       throw new UnauthorizedException('Invalid username or password');
     }
@@ -29,7 +33,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    return admin;
+    return {
+      ...admin,
+      groupUuid: admin.group ? admin.group.uuid : null, // Add group UUID if it exists
+    };
   }
 
   async login(admin: any) {
@@ -37,7 +44,7 @@ export class AuthService {
       username: admin.username,
       sub: admin.uuid,
       role: admin.role,
-      googleId: admin.googleId,
+      groupUuid: admin.groupUuid,
     };
     return {
       access_token: this.jwtService.sign(payload),

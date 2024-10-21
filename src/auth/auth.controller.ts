@@ -1,6 +1,8 @@
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from './roles.guard';
+import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +11,6 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: { username: string; password: string }) {
     try {
-      console.log(body);
       const admin = await this.authService.validateAdmin(
         body.username,
         body.password,
@@ -21,6 +22,8 @@ export class AuthController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Post('register')
   async register(
     @Body()
@@ -37,6 +40,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Post('profile')
   getProfile(@Request() req) {
+    console.log(req.user);
     return req.user;
   }
 }
