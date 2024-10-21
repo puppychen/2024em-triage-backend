@@ -14,9 +14,9 @@ const createFunction = async (expressInstance): Promise<void> => {
   await app.init();
 };
 
-export const api = functions
-  .https
-  .onRequest({ region: 'asia-east1' }, async (request, response) => {
+export const api = functions.https.onRequest(
+  { region: 'asia-east1' },
+  async (request, response) => {
     await createFunction(expressServer);
     expressServer(request, response);
   },
