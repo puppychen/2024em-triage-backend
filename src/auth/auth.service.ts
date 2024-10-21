@@ -37,6 +37,7 @@ export class AuthService {
       username: admin.username,
       sub: admin.uuid,
       role: admin.role,
+      googleId: admin.googleId,
     };
     return {
       access_token: this.jwtService.sign(payload),

@@ -8,11 +8,17 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: { username: string; password: string }) {
-    const admin = await this.authService.validateAdmin(
-      body.username,
-      body.password,
-    );
-    return this.authService.login(admin);
+    try {
+      console.log(body);
+      const admin = await this.authService.validateAdmin(
+        body.username,
+        body.password,
+      );
+      return this.authService.login(admin);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   @Post('register')
