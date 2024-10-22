@@ -42,6 +42,7 @@ export class AuthService {
   async login(admin: any) {
     const payload = {
       username: admin.username,
+      name: admin.name,
       sub: admin.uuid,
       role: admin.role,
       groupUuid: admin.groupUuid,
