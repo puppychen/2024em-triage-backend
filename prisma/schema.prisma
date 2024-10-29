@@ -19,32 +19,252 @@ enum Role {
 }
 
 model Admin {
-  id       Int    @id @default(autoincrement())
-  uuid     String @unique @default(uuid()) @db.Uuid
-  username String @unique
-  password String
-  name     String
-  email    String
-  role     Role   @default(user)
-  groupId  Int?   @map("group_id")
-  group    Group? @relation(fields: [groupId], references: [id])
-
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @db.Uuid
+  username  String   @unique
+  password  String
+  name      String
+  email     String
+  role      Role     @default(user)
+  groupId   Int?     @map("group_id")
+  group     Group?   @relation(fields: [groupId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("admins")
 }
 
+model CtasType1 {
+  id        Int         @id @default(autoincrement())
+  nameEn    String?     @map("name_en")
+  nameZh    String?     @map("name_zh")
+  sort      Int
+  deptId    Int         @map("dept_id")
+  dept      Dept        @relation(fields: [deptId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
+  ctasType2 CtasType2[]
+
+  @@index([deptId])
+  @@map("ctas_types1")
+}
+
+model CtasType2 {
+  id          Int         @id @default(autoincrement())
+  nameEn      String?     @map("name_en")
+  nameZh      String      @map("name_zh")
+  sort        Int
+  ctasType1Id Int         @map("ctas_type1_id")
+  ctasType1   CtasType1   @relation(fields: [ctasType1Id], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at")
+  ctasType3   CtasType3[]
+
+  @@index([ctasType1Id])
+  @@map("ctas_types2")
+}
+
+model CtasType3 {
+  id          Int       @id @default(autoincrement())
+  nameEn      String?   @map("name_en")
+  nameZh      String?   @map("name_zh")
+  sort        Int
+  rank        Int
+  ctasType2Id Int       @map("ctas_type2_id")
+  ctasType2   CtasType2 @relation(fields: [ctasType2Id], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([ctasType2Id])
+  @@map("ctas_types3")
+}
+
+model Dept {
+  id        Int         @id @default(autoincrement())
+  name      String
+  sort      Int
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
+  ctasType1 CtasType1[]
+
+  @@map("depts")
+}
+
 // 醫療機構
 model Group {
-  id          Int      @id @default(autoincrement())
-  uuid        String   @unique @default(uuid()) @db.Uuid
+  id          Int          @id @default(autoincrement())
+  uuid        String       @unique @default(uuid()) @db.Uuid
   name        String
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
-
-  Admin Admin[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
+  Admin       Admin[]
+  TriageUser  TriageUser[]
 
   @@map("groups")
+}
+
+model TriageUser {
+  id                       Int      @id @default(autoincrement())
+  groupId                  Int      @map("group_id")
+  group                    Group    @relation(fields: [groupId], references: [id])
+  medicalRecordNumber      String?  @map("medical_record_number") // 病歷號
+  sex                      String? // 性別
+  deptId                   Int      @map("dept_id") // 對應 Dept 的 id
+  registrationDate         DateTime @map("registration_date")
+  birthdate                DateTime
+  ctasType1Id              Int?     @map("ctas_type1_id")
+  ctasType2Id              Int?     @map("ctas_type2_id") // 對應 CtasType2 的 id
+  ctasType3Id              Int?     @map("ctas_type3_id") // 對應 CtasType3 的 id
+  age                      String? // 年齡作為字串存儲
+  arrivalMethod            String? // 到達方式
+  temperature              String? // 體溫
+  pulse                    String? // 脈搏
+  respiration              String? // 呼吸
+  oxygenSaturation         String? // 血氧飽和度
+  bloodPressureSYS         String?     @map("blood_pressure_sys")
+  bloodPressureDIA         String?     @map("blood_pressure_dia")
+  weight                   String? // 體重
+  epidemicNote             String? // 備註
+  consciousnessE           Int? // 清醒度 E
+  consciousnessV           Int? // 清醒度 V
+  consciousnessM           Int? // 清醒度 M
+  computerGrade            Int?     @map("computer_grade") // 電腦化分級
+  elderlyTriageGrade       Int?     @map("elderly_triage_grade") // 老年分級
+  frailtyGrade             Int?     @map("frailty_grade") // 衰弱指標
+  modifiedGrade            Int?     @map("modified_grade") // 修正分級
+  modifiedGradeDescription String?  @map("modified_grade_description") // 修正分級描述
+  complaintEdit            String? // 主訴編輯
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  TriageUserEpidemic TriageUserEpidemic[]
+  TriageUserFrailty TriageUserFrailty[]
+  TriageUserPain TriageUserPain[]
+  TriageUserPastMedical TriageUserPastMedical[]
+  TriageUserSarcopenia TriageUserSarcopenia[]
+  TriageUserSpecialCase TriageUserSpecialCase[]
+  TriageUserTrauma TriageUserTrauma[]
+
+  @@index([groupId])
+  @@map("triage_users")
+}
+
+model TriageUserEpidemic {
+  id                   Int     @id @default(autoincrement())
+  triageUserId         Int @map("triage_user_id")
+  triageUser           TriageUser @relation(fields: [triageUserId], references: [id])
+
+  // 流行病相關欄位
+  cough                String?  // 咳嗽情況
+  contact              String?  // 接觸史
+  travel               String?  // 旅遊史
+
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_epidemic")
+}
+
+model TriageUserFrailty {
+  id                 Int     @id @default(autoincrement())
+  triageUserId       Int     @map("triage_user_id")
+  triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
+
+  score              Int     @map("score")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_frailty")
+}
+
+model TriageUserPain {
+  id                 Int     @id @default(autoincrement())
+  triageUserId       Int     @map("triage_user_id")
+  triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
+
+  level              Int     @map("level")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_pain")
+}
+
+model TriageUserPastMedical {
+  id            Int     @id @default(autoincrement())
+  triageUserId  Int @map("triage_user_id")
+  triageUser    TriageUser @relation(fields: [triageUserId], references: [id])
+
+  allergyHistory String? @map("allergy_history")
+  bloodType      String? @map("blood_type")
+  saveDate       DateTime? @map("save_date")
+  additionalInfo String? @map("additional_info")
+  noHistory      Boolean? @map("no_history")
+  unknownHistory Boolean? @map("unknown_history")
+  centralNervousSystemDiseases String[] @map("central_nervous_system_diseases")
+  cardiacDiseases String[] @map("cardiac_diseases")
+  respiratoryDiseases String[] @map("respiratory_diseases")
+  digestiveDiseases String[] @map("digestive_diseases")
+  urinaryDiseases String[] @map("urinary_diseases")
+  metabolicDiseases String[] @map("metabolic_diseases")
+  cancerOrImmunodeficiencyDiseases String[] @map("cancer_or_immunodeficiency_diseases")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_past_medical")
+}
+
+model TriageUserSarcopenia {
+  id                 Int     @id @default(autoincrement())
+  triageUserId       Int     @map("triage_user_id")
+  triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
+
+  muscleStrength     Int?    @map("muscle_strength")
+  walkingAssistance  Int?    @map("walking_assistance")
+  gettingUp          Int?    @map("getting_up")
+  climbingStairs     Int?    @map("climbing_stairs")
+  falling            Int?    @map("falling")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_sarcopenia")
+}
+
+model TriageUserSpecialCase {
+  id                 Int     @id @default(autoincrement())
+  triageUserId       Int     @map("triage_user_id")
+  triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
+
+  saveDate               DateTime? @map("save_date")
+  suicide            Boolean? @map("suicide")
+  drugAddiction      Boolean? @map("drug_addiction")
+  domesticViolence   Boolean? @map("domestic_violence")
+  infectiousDisease  Boolean? @map("infectious_disease")
+  sexualAssault      Boolean? @map("sexual_assault")
+  childAbuse         Boolean? @map("child_abuse")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_special_case")
+}
+
+model TriageUserTrauma {
+  id            Int     @id @default(autoincrement())
+  triageUserId  Int @map("triage_user_id")
+  triageUser    TriageUser @relation(fields: [triageUserId], references: [id])
+
+  injury        String?
+  workplace     String?
+  highRiskMechanisms String[] @map("high_risk_mechanisms")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("triage_user_trauma")
 }

@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "em-triage"
-  }
+  },
+  "targets": {},
+  "etags": {
+    "em-triage": {
+      "extensionInstances": {}
+    }
+  },
+  "dataconnectEmulatorConfig": {}
 }
