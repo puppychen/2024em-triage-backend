@@ -1,108 +1,77 @@
-import { IsOptional, IsString, IsInt, IsDateString, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  IsDate,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { BaseTriageUserDto } from './base-triage-user.dto';
 
-export class CreateTriageUserDto {
+class EpidemicDataDto {
+  @IsOptional() @IsString() cough?: string;
+  @IsOptional() @IsString() contact?: string;
+  @IsOptional() @IsString() travel?: string;
+}
+
+class SpecialCaseDataDto {
+  @IsOptional() @IsString() saveDate?: string;
+  @IsOptional() @IsInt() suicide?: boolean;
+  @IsOptional() @IsInt() drugAddiction?: boolean;
+  @IsOptional() @IsInt() domesticViolence?: boolean;
+  @IsOptional() @IsInt() infectiousDisease?: boolean;
+  @IsOptional() @IsInt() sexualAssault?: boolean;
+  @IsOptional() @IsInt() childAbuse?: boolean;
+}
+
+class PastMedicalDataDto {
+  @IsOptional() @IsString() allergyHistory?: string;
+  @IsOptional() @IsString() bloodType?: string;
+  @IsOptional() @IsString() saveDate?: string;
+  @IsOptional() @IsString() additionalInfo?: string;
+  @IsOptional() @IsInt() noHistory?: boolean;
+  @IsOptional() @IsInt() unknownHistory?: boolean;
   @IsOptional()
-  @IsString()
-  medicalRecordNumber?: string; // 病歷號
-
+  @IsString({ each: true })
+  centralNervousSystemDiseases?: string[];
+  @IsOptional() @IsString({ each: true }) cardiacDiseases?: string[];
+  @IsOptional() @IsString({ each: true }) respiratoryDiseases?: string[];
+  @IsOptional() @IsString({ each: true }) digestiveDiseases?: string[];
+  @IsOptional() @IsString({ each: true }) urinaryDiseases?: string[];
+  @IsOptional() @IsString({ each: true }) metabolicDiseases?: string[];
   @IsOptional()
-  @IsString()
-  sex?: string; // 性別
+  @IsString({ each: true })
+  cancerOrImmunodeficiencyDiseases?: string[];
+}
 
-  @IsInt()
-  deptId: number; // 科別 ID
+class TraumaDataDto {
+  @IsOptional() @IsString() injury?: string;
+  @IsOptional() @IsString() workplace?: string;
+  @IsOptional() @IsString({ each: true }) highRiskMechanisms?: string[];
+}
 
-  @IsDateString()
-  registrationDate: Date; // 掛號日期
+class PainDataDto {
+  @IsOptional() @IsString() level?: string;
+}
 
-  @IsDateString()
-  birthdate: Date; // 出生日
+class SarcopeniaDataDto {
+  @IsOptional() @IsString() muscleStrength?: string;
+  @IsOptional() @IsString() walkingAssistance?: string;
+  @IsOptional() @IsString() gettingUp?: string;
+  @IsOptional() @IsString() climbingStairs?: string;
+  @IsOptional() @IsString() falling?: string;
+}
 
-  @IsOptional()
-  @IsInt()
-  ctasType1Id?: number; // 大分類 ID
+class FrailtyDataDto {
+  @IsOptional() @IsInt() score?: number;
+}
 
-  @IsOptional()
-  @IsInt()
-  ctasType2Id?: number; // 檢傷標準主訴 ID
-
-  @IsOptional()
-  @IsInt()
-  ctasType3Id?: number; // 檢傷分級判定依據 ID
-
-  @IsOptional()
-  @IsString()
-  age?: string; // 年齡
-
-  @IsOptional()
-  @IsString()
-  arrivalMethod?: string; // 到達方式
-
-  @IsOptional()
-  @IsString()
-  temperature?: string; // 體溫
-
-  @IsOptional()
-  @IsString()
-  pulse?: string; // 脈搏
-
-  @IsOptional()
-  @IsString()
-  respiration?: string; // 呼吸
-
-  @IsOptional()
-  @IsString()
-  oxygenSaturation?: string; // 血氧飽和度
-
-  @IsOptional()
-  @IsString()
-  bloodPressureSYS?: string; // 血壓 SYS
-
-  @IsOptional()
-  @IsString()
-  bloodPressureDIA?: string; // 血壓 DIA
-
-  @IsOptional()
-  @IsString()
-  weight?: string; // 體重
-
-  @IsOptional()
-  @IsString()
-  epidemicNote?: string; // 備註
-
-  @IsOptional()
-  @IsInt()
-  consciousnessE?: number; // 清醒度 E
-
-  @IsOptional()
-  @IsInt()
-  consciousnessV?: number; // 清醒度 V
-
-  @IsOptional()
-  @IsInt()
-  consciousnessM?: number; // 清醒度 M
-
-  @IsOptional()
-  @IsInt()
-  computerGrade?: number; // 電腦化分級
-
-  @IsOptional()
-  @IsInt()
-  elderlyTriageGrade?: number; // 老年分級
-
-  @IsOptional()
-  @IsInt()
-  frailtyGrade?: number; // 衰弱指標
-
-  @IsOptional()
-  @IsInt()
-  modifiedGrade?: number; // 修正分級
-
-  @IsOptional()
-  @IsString()
-  modifiedGradeDescription?: string; // 修正分級描述
-
-  @IsOptional()
-  @IsString()
-  complaintEdit?: string; // 主訴編輯
+export class CreateTriageUserDto extends BaseTriageUserDto {
+  @ValidateNested() @Type(() => EpidemicDataDto) epidemicData: EpidemicDataDto;
+  @ValidateNested() @Type(() => SpecialCaseDataDto) specialCaseData: SpecialCaseDataDto;
+  @ValidateNested() @Type(() => PastMedicalDataDto) pastMedicalData: PastMedicalDataDto;
+  @ValidateNested() @Type(() => TraumaDataDto) traumaData: TraumaDataDto;
+  @ValidateNested() @Type(() => PainDataDto) painData: PainDataDto;
+  @ValidateNested() @Type(() => SarcopeniaDataDto) sarcopeniaData: SarcopeniaDataDto;
+  @ValidateNested() @Type(() => FrailtyDataDto) frailtyData: FrailtyDataDto;
 }

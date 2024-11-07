@@ -11,40 +11,41 @@ import {
 import { GroupService } from './group.service';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { JwtAdminGuard } from '../auth/jwt-admin.guard';
 
 @Controller('groups')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAdminGuard, RolesGuard)
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
-  @Roles('admin') // 只有 'admin' 角色可以創建群組
+  @Roles('system')
   @Post()
   createGroup(@Body() body: { name: string; description?: string }) {
     return this.groupService.createGroup(body.name, body.description);
   }
 
-  @Roles('admin') // 只有 'admin' 角色可以查看特定群組
-  @Get(':id')
-  getGroupById(@Param('id') id: number) {
-    return this.groupService.getGroupById(id);
+  @Roles('system', 'admin')
+  @Get(':uuid')
+  getGroupByUuid(@Param('uuid') uuid: string) {
+    return this.groupService.getGroupByUuid(uuid);
   }
 
-  @Roles('admin') // 只有 'admin' 角色可以更新群組
-  @Put(':id')
+  @Roles('system')
+  @Put(':uuid')
   updateGroup(
-    @Param('id') id: number,
+    @Param('uuid') uuid: string,
     @Body() body: { name: string; description?: string },
   ) {
-    return this.groupService.updateGroup(id, body.name, body.description);
+    return this.groupService.updateGroup(uuid, body.name, body.description);
   }
 
-  @Roles('admin') // 只有 'admin' 角色可以刪除群組
-  @Delete(':id')
-  deleteGroup(@Param('id') id: number) {
-    return this.groupService.deleteGroup(id);
+  @Roles('system')
+  @Delete(':uuid')
+  deleteGroup(@Param('uuid') uuid: string) {
+    return this.groupService.deleteGroup(uuid);
   }
 
-  @Roles('admin') // 只有 'admin' 角色可以查看所有群組
+  @Roles('system', 'admin')
   @Get()
   getAllGroups() {
     return this.groupService.getAllGroups();

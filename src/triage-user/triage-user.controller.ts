@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import { TriageUserService } from './triage-user.service';
 import { CreateTriageUserDto, UpdateTriageUserDto } from './dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAdminGuard } from '../auth/jwt-admin.guard';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('triage-user')
+@UseGuards(JwtAdminGuard)
 export class TriageUserController {
   constructor(private readonly triageUserService: TriageUserService) {}
 

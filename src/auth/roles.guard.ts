@@ -18,13 +18,13 @@ export class RolesGuard implements CanActivate {
       'roles',
       context.getHandler(),
     );
-    console.log(requiredRoles);
     // 如果沒有定義角色，則允許所有請求
     if (!requiredRoles) {
       return true;
     }
-
+    console.log(context.switchToHttp().getRequest());
     const { user } = context.switchToHttp().getRequest();
+    console.log(user);
     const hasRole = requiredRoles.some((role) => user.role === role);
 
     if (!hasRole) {

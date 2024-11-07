@@ -1,39 +1,47 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // 建立新使用者，只針對 role 為 'user'
   async createUser(data: {
     username: string;
     password: string;
     email: string;
     name: string;
+    groupId: number;
   }) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
     return this.prisma.admin.create({
       data: {
         username: data.username,
-        password: data.password, // 密碼加密應在 controller 層處理
+        password: hashedPassword,
         email: data.email,
         name: data.name,
-        role: 'user', // 強制設定為 'user'
+        role: 'user',
+        groupId: data.groupId,
       },
     });
   }
 
-  // 查詢所有 role 為 'user' 的使用者
-  async getAllUsers() {
+  async getUsersByGroupId(groupId: number) {
     return this.prisma.admin.findMany({
-      where: { role: 'user' },
+      where: { groupId },
+      include: { group: true },
     });
   }
 
-  // 基於 uuid 查詢特定的 'user' 使用者
+  async getAllUsers() {
+    return this.prisma.admin.findMany({
+      include: { group: true },
+    });
+  }
+
   async getUserByUuid(uuid: string) {
     const user = await this.prisma.admin.findFirst({
-      where: { uuid, role: 'user' },
+      where: { uuid },
     });
     if (!user) {
       throw new NotFoundException('User not found or not a user role');
@@ -41,7 +49,6 @@ export class AdminService {
     return user;
   }
 
-  // 基於 uuid 更新 'user' 使用者的資訊
   async updateUser(uuid: string, data: { name?: string; email?: string }) {
     return this.prisma.admin.update({
       where: { uuid },
@@ -52,10 +59,15 @@ export class AdminService {
     });
   }
 
-  // 基於 uuid 刪除 'user' 使用者
   async deleteUser(uuid: string) {
     return this.prisma.admin.delete({
-      where: { uuid, role: 'user' },
+      where: { uuid },
+    });
+  }
+
+  async getGroupByUuid(uuid: string) {
+    return this.prisma.group.findUnique({
+      where: { uuid },
     });
   }
 }

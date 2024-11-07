@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,40 +15,73 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
 @Controller('admin')
-@UseGuards(AuthGuard('jwt'), RolesGuard) // 使用 JWT 與角色守衛
+@UseGuards(AuthGuard('jwt'), RolesGuard) // Use JWT and Roles guards
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  // 只有 'admin' 角色的使用者才能建立 'user' 使用者
-  @Roles('admin')
+  @Roles('system', 'admin')
   @Post('user')
-  createUser(
+  async createUser(
     @Body()
     body: {
       username: string;
       password: string;
       email: string;
       name: string;
+      groupUuid?: string; // Optional group UUID
     },
+    @Req() req: any,
   ) {
-    return this.adminService.createUser(body);
+    const userRole = req.user.role;
+    let groupId: number;
+
+    if (userRole === 'system') {
+      if (!body.groupUuid) {
+        throw new Error('Group UUID is required for system role');
+      }
+      // Fetch group ID based on group UUID
+      const group = await this.adminService.getGroupByUuid(body.groupUuid);
+      if (!group) {
+        throw new Error('Invalid group UUID');
+      }
+      groupId = group.id;
+    } else if (userRole === 'admin') {
+      // Fetch the user's group ID based on their UUID
+      const user = await this.adminService.getUserByUuid(req.user.uuid);
+      if (!user) {
+        throw new Error('Invalid user UUID');
+      }
+      groupId = user.groupId;
+    }
+
+    return this.adminService.createUser({
+      ...body,
+      groupId,
+    });
   }
 
-  // 取得所有 'user' 使用者
-  @Roles('admin')
+  @Roles('system', 'admin')
   @Get('users')
-  getAllUsers() {
-    return this.adminService.getAllUsers();
+  async getAllUsers(@Req() req: any) {
+    const userRole = req.user.role;
+
+    if (userRole === 'system') {
+      return this.adminService.getAllUsers();
+    } else if (userRole === 'admin') {
+      const user = await this.adminService.getUserByUuid(req.user.uuid);
+      if (!user) {
+        throw new Error('Invalid user UUID');
+      }
+      return this.adminService.getUsersByGroupId(user.groupId);
+    }
   }
 
-  // 基於 uuid 取得特定的 'user' 使用者
   @Roles('admin')
   @Get('user/:uuid')
   getUserByUuid(@Param('uuid') uuid: string) {
     return this.adminService.getUserByUuid(uuid);
   }
 
-  // 基於 uuid 更新 'user' 使用者的資訊
   @Roles('admin')
   @Put('user/:uuid')
   updateUser(
@@ -57,7 +91,6 @@ export class AdminController {
     return this.adminService.updateUser(uuid, body);
   }
 
-  // 基於 uuid 刪除 'user' 使用者
   @Roles('admin')
   @Delete('user/:uuid')
   deleteUser(@Param('uuid') uuid: string) {

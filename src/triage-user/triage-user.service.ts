@@ -8,12 +8,43 @@ export class TriageUserService {
 
   async create(createTriageUserDto: CreateTriageUserDto, userUuid: string) {
     const groupId = await this.getGroupIdByUser(userUuid); // 取得使用者的 groupId
+    const {
+      epidemicData,
+      specialCaseData,
+      pastMedicalData,
+      traumaData,
+      painData,
+      sarcopeniaData,
+      frailtyData,
+      ...rest
+    } = createTriageUserDto;
     return this.prisma.triageUser.create({
       data: {
-        ...createTriageUserDto,
+        ...rest,
         groupId,
         registrationDate: new Date(createTriageUserDto.registrationDate),
         birthdate: new Date(createTriageUserDto.birthdate),
+        TriageUserEpidemic: {
+          create: createTriageUserDto.epidemicData,
+        },
+        TriageUserSpecialCase: {
+          create: createTriageUserDto.specialCaseData,
+        },
+        TriageUserPastMedical: {
+          create: createTriageUserDto.pastMedicalData,
+        },
+        TriageUserTrauma: {
+          create: createTriageUserDto.traumaData,
+        },
+        TriageUserPain: {
+          create: createTriageUserDto.painData,
+        },
+        TriageUserSarcopenia: {
+          create: createTriageUserDto.sarcopeniaData,
+        },
+        TriageUserFrailty: {
+          create: createTriageUserDto.frailtyData,
+        },
       },
     });
   }

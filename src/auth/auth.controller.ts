@@ -23,7 +23,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles('system')
   @Post('register')
   async register(
     @Body()

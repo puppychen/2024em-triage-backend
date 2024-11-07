@@ -14,6 +14,7 @@ datasource db {
 }
 
 enum Role {
+  system
   admin
   user
 }
@@ -172,7 +173,7 @@ model TriageUserFrailty {
   triageUserId       Int     @map("triage_user_id")
   triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
 
-  score              Int     @map("score")
+  score              Int?     @map("score")
 
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
@@ -185,7 +186,7 @@ model TriageUserPain {
   triageUserId       Int     @map("triage_user_id")
   triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
 
-  level              Int     @map("level")
+  level              String?     @map("level")
 
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
@@ -200,7 +201,7 @@ model TriageUserPastMedical {
 
   allergyHistory String? @map("allergy_history")
   bloodType      String? @map("blood_type")
-  saveDate       DateTime? @map("save_date")
+  saveDate       String? @map("save_date")
   additionalInfo String? @map("additional_info")
   noHistory      Boolean? @map("no_history")
   unknownHistory Boolean? @map("unknown_history")
@@ -223,11 +224,11 @@ model TriageUserSarcopenia {
   triageUserId       Int     @map("triage_user_id")
   triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
 
-  muscleStrength     Int?    @map("muscle_strength")
-  walkingAssistance  Int?    @map("walking_assistance")
-  gettingUp          Int?    @map("getting_up")
-  climbingStairs     Int?    @map("climbing_stairs")
-  falling            Int?    @map("falling")
+  muscleStrength     String?    @map("muscle_strength")
+  walkingAssistance  String?    @map("walking_assistance")
+  gettingUp          String?    @map("getting_up")
+  climbingStairs     String?    @map("climbing_stairs")
+  falling            String?    @map("falling")
 
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
@@ -240,7 +241,7 @@ model TriageUserSpecialCase {
   triageUserId       Int     @map("triage_user_id")
   triageUser         TriageUser @relation(fields: [triageUserId], references: [id])
 
-  saveDate               DateTime? @map("save_date")
+  saveDate               String? @map("save_date")
   suicide            Boolean? @map("suicide")
   drugAddiction      Boolean? @map("drug_addiction")
   domesticViolence   Boolean? @map("domestic_violence")

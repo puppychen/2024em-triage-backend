@@ -11,9 +11,9 @@ export class GroupService {
     });
   }
 
-  async getGroupById(id: number) {
+  async getGroupByUuid(uuid: string) {
     const group = await this.prisma.group.findUnique({
-      where: { id },
+      where: { uuid },
       include: { Admin: true },
     });
     if (!group) {
@@ -22,16 +22,16 @@ export class GroupService {
     return group;
   }
 
-  async updateGroup(id: number, name: string, description?: string) {
+  async updateGroup(uuid: string, name: string, description?: string) {
     return this.prisma.group.update({
-      where: { id },
+      where: { uuid },
       data: { name, description },
     });
   }
 
-  async deleteGroup(id: number) {
+  async deleteGroup(uuid: string) {
     return this.prisma.group.delete({
-      where: { id },
+      where: { uuid },
     });
   }
 
