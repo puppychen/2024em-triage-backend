@@ -87,6 +87,7 @@ model Dept {
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
   ctasType1 CtasType1[]
+  TriageUser TriageUser[]
 
   @@map("depts")
 }
@@ -112,6 +113,7 @@ model TriageUser {
   medicalRecordNumber      String?  @map("medical_record_number") // 病歷號
   sex                      String? // 性別
   deptId                   Int      @map("dept_id") // 對應 Dept 的 id
+  dept                     Dept     @relation(fields: [deptId], references: [id])
   registrationDate         DateTime @map("registration_date")
   birthdate                DateTime
   ctasType1Id              Int?     @map("ctas_type1_id")

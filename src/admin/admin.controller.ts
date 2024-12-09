@@ -76,22 +76,22 @@ export class AdminController {
     }
   }
 
-  @Roles('admin')
+  @Roles('system', 'admin')
   @Get('user/:uuid')
   getUserByUuid(@Param('uuid') uuid: string) {
     return this.adminService.getUserByUuid(uuid);
   }
 
-  @Roles('admin')
+  @Roles('system', 'admin')
   @Put('user/:uuid')
   updateUser(
     @Param('uuid') uuid: string,
-    @Body() body: { name?: string; email?: string },
+    @Body() body: { name?: string; email?: string; password?: string },
   ) {
     return this.adminService.updateUser(uuid, body);
   }
 
-  @Roles('admin')
+  @Roles('system', 'admin')
   @Delete('user/:uuid')
   deleteUser(@Param('uuid') uuid: string) {
     return this.adminService.deleteUser(uuid);

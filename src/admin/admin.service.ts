@@ -42,6 +42,7 @@ export class AdminService {
   async getUserByUuid(uuid: string) {
     const user = await this.prisma.admin.findFirst({
       where: { uuid },
+      include: { group: true },
     });
     if (!user) {
       throw new NotFoundException('User not found or not a user role');
@@ -49,13 +50,19 @@ export class AdminService {
     return user;
   }
 
-  async updateUser(uuid: string, data: { name?: string; email?: string }) {
+  async updateUser(uuid: string, data: { name?: string; email?: string; password?: string }) {
+    const updateData: any = {
+      name: data.name,
+      email: data.email,
+    };
+
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
     return this.prisma.admin.update({
       where: { uuid },
-      data: {
-        name: data.name,
-        email: data.email,
-      },
+      data: updateData,
     });
   }
 

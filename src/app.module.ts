@@ -1,14 +1,13 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { GroupModule } from './group/group.module';
 import { AdminModule } from './admin/admin.module';
-import { DeptService } from './dept/dept.service';
-import { DeptController } from './dept/dept.controller';
 import { DeptModule } from './dept/dept.module';
 import { TriageUserModule } from './triage-user/triage-user.module';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 
 @Module({
   imports: [
@@ -24,4 +23,8 @@ import { TriageUserModule } from './triage-user/triage-user.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

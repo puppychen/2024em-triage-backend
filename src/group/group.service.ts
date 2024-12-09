@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -30,6 +34,19 @@ export class GroupService {
   }
 
   async deleteGroup(uuid: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { uuid },
+      include: { Admin: true },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
+    if (group.Admin.length > 0) {
+      throw new BadRequestException('Cannot delete group with active admins');
+    }
+
     return this.prisma.group.delete({
       where: { uuid },
     });

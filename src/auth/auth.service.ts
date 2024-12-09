@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma.service';
+import { Admin } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -87,5 +88,30 @@ export class AuthService {
       }
       throw new InternalServerErrorException('Internal server error');
     }
+  }
+
+  async getAdminProfile(uuid: string): Promise<Omit<Admin, 'id' | 'password'>> {
+    const admin = await this.prisma.admin.findUnique({
+      where: { uuid },
+    });
+    delete admin.password;
+    delete admin.id;
+    return admin;
+  }
+
+  async updateAdminProfile(
+    uuid: string,
+    updateData: Partial<Admin>,
+  ): Promise<Admin> {
+    if (updateData.password) {
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      updateData.password = hashedPassword;
+    } else {
+      delete updateData.password;
+    }
+    return this.prisma.admin.update({
+      where: { uuid },
+      data: updateData,
+    });
   }
 }
